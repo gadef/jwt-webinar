@@ -1,0 +1,94 @@
+<html>
+
+<head>
+    <title>Express</title>
+    <link rel="stylesheet" href="/stylesheets/style.css">
+</head>
+
+<body>
+    <h1>Express</h1>
+    <p>Welcome to Express</p>
+</body>
+
+<button onclick="login();">Call Login</button>
+
+<button onclick="list();">Get Data</button>
+
+<button onclick="logout();">Call Logout</button>
+
+</html>
+
+<script>
+    function login() {
+        var url = 'http://localhost:3000/auth/login';
+        var data = {
+            "user": "egarcia.gadef@gmail.com",
+            "password": "webinarAM"
+        };
+
+        fetch(url, {
+                method: 'POST',
+                body: JSON.stringify(data),
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            }).then(res => res.json())
+            .catch(error => console.error('Error:', error))
+            .then(response => {
+                localStorage.setItem('token', response.token);
+                console.log('Success:', response);
+            });
+    }
+
+    function list() {
+
+        var url = 'http://localhost:3000/users/';
+        fetch(url, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + localStorage.getItem('token'),
+                    'credentials': 'include'
+                }
+            }).then(res => {
+                console.log(res.status);
+                if (res.status == 401) {
+                    refresh();
+                } else {
+                    res.json();
+                    console.log('Success:', res);
+                }
+            })
+            .catch(error => console.error('Error:', error));
+    }
+
+    function logout() {
+
+        var url = 'http://localhost:3000/auth/logout/';
+        fetch(url, {
+            method: 'DELETE',
+            headers: {
+                'credentials': 'include'
+            }
+        }).then(response => {
+            localStorage.removeItem('token');
+            console.log('Success:', response);
+        });
+    }
+
+    function refresh() {
+        var url = 'http://localhost:3000/refresh/';
+        fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'credentials': 'include'
+                }
+            }).then(res => res.json())
+            .catch(error => console.error('Error:', error))
+            .then(response => {
+                localStorage.setItem('token', response.token);
+                console.log('Success:', response)
+            });
+    }
+</script>
